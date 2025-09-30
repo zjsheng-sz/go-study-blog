@@ -1,0 +1,28 @@
+app: 
+  env: "dev"
+  port: 8080
+  timeout: 60s
+  level: debug
+  jwt_secret: your_jwt_secret_key
+  enable_cors: true
+
+db:
+  driver: mysql
+  dsn: root:12345678@tcp(localhost:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local
+  max_open_conns: 100
+  max_idle_conns: 10
+  conn_max_lifetime: 30m
+  conn_max_idle_time: 10m
+
+redis:
+  addr: localhost:6379
+  password: ""
+  db: 0
+  pool_size: 10
+  min_idle_conns: 5
+  max_conn_age: 30m
+  idle_timeout: 5m
+  read_timeout: 3s
+  write_timeout: 3s
+
+
