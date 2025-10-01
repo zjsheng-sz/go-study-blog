@@ -43,3 +43,15 @@ Content-Type: : application/json
     "username" : "zjs", 
     "password" : "123456"
 }
+
+
+### idenetiferAuth
+POST {{baseUrl}}:{{port}}/api/auth/users/identiferAuch HTTP/1.1
+Content-Type: : application/json
+Authorization: Bearer {{token}}
+
+
+{
+    "username" : "zjs", 
+    "password" : "123456"
+}
