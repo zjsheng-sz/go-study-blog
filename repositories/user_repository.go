@@ -23,6 +23,14 @@ func (r *UserRepository) FindByID(id uint) (models.User, error) {
 	return user, nil
 }
 
+func (r *UserRepository) FindByName(username string) (models.User, error) {
+	var user models.User
+	if err := r.db.Where("username", username).First(&user).Error; err != nil {
+		return models.User{}, err
+	}
+	return user, nil
+}
+
 func (r *UserRepository) FindAll() ([]models.User, error) {
 	var users []models.User
 	if err := r.db.Find(&users).Error; err != nil {
@@ -36,7 +44,8 @@ func (r *UserRepository) Create(user models.User) error {
 }
 
 func (r *UserRepository) Update(user models.User) error {
-	return r.db.Save(&user).Error
+
+	return r.db.Model(&models.User{}).Where("id = ?", user.ID).Updates(user).Error
 }
 
 func (r *UserRepository) Delete(id uint) error {

@@ -3,6 +3,7 @@ package main
 import (
 	"go-study-blog/api"
 	"go-study-blog/config"
+	"go-study-blog/middleware"
 	"go-study-blog/models"
 	"go-study-blog/repositories"
 	"go-study-blog/services"
@@ -33,11 +34,22 @@ func main() {
 	// 设置路由
 	r := gin.Default()
 
-	r.POST("/users", userController.CreateUser)
-	r.GET("/users/:id", userController.GetUser)
-	r.GET("/users", userController.GetAllUsers)
-	r.PUT("/users/:id", userController.UpdateUser)
-	r.DELETE("/users/:id", userController.DeleteUser)
+	// 路由
+	api := r.Group("/api")
+	{
+		api.POST("/register", userController.Register)
+		api.POST("/login", userController.Login)
+
+		// 需要认证的路由
+		auth := api.Group("/auth")
+		auth.Use(middleware.JWTAuthMiddleware())
+		{
+			auth.GET("/users/:id", userController.GetUser)
+			auth.GET("/users", userController.GetAllUsers)
+			auth.PUT("/users", userController.UpdateUser)
+			auth.DELETE("/users/:id", userController.DeleteUser)
+		}
+	}
 
 	// 启动服务器
 	r.Run(":8080")

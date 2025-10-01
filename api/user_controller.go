@@ -1,9 +1,13 @@
 package api
 
 import (
+	"go-study-blog/config"
 	"go-study-blog/models"
 	"go-study-blog/services"
+	"go-study-blog/utils"
+	"net/http"
 	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,22 +42,6 @@ func (ctrl *UserController) GetAllUsers(c *gin.Context) {
 	c.JSON(200, users)
 }
 
-func (ctrl *UserController) CreateUser(c *gin.Context) {
-
-	user := models.User{}
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request payload"})
-		return
-	}
-
-	if err := ctrl.userservice.CreateUser(user); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create user"})
-		return
-	}
-	c.JSON(200, user)
-
-}
-
 func (ctrl *UserController) UpdateUser(c *gin.Context) {
 
 	user := models.User{}
@@ -78,5 +66,53 @@ func (ctrl *UserController) DeleteUser(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{"message": "User deleted successfully"})
+
+}
+
+func (ctrl *UserController) Register(c *gin.Context) {
+
+	user := models.User{}
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	if err := ctrl.userservice.Register(user); err != nil {
+		c.JSON(500, gin.H{"error": "Failed to create user"})
+		return
+	}
+	c.JSON(200, user)
+
+}
+
+func (ctrl *UserController) Login(c *gin.Context) {
+
+	user := models.User{}
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	existingUser, err := ctrl.userservice.GetUserByName(user.Username)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Invalid username or password"})
+		return
+	}
+
+	err = existingUser.CheckPassword(user.Password)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Invalid username or password"})
+		return
+	}
+
+	//gen token
+	cfg := config.Load()
+	token, err := utils.GenerateToken(existingUser.ID, cfg.App.JWTSecret)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
 
 }
