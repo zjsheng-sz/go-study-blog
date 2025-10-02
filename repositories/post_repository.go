@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"go-study-blog/common"
 	"go-study-blog/models"
 
 	"gorm.io/gorm"
@@ -28,7 +29,7 @@ func (r *PostRepository) FindByID(id uint) (models.Post, error) {
 	return post, nil
 }
 
-func (r *PostRepository) Find(post models.Post, page models.Pagination) (models.PaginationResult, error) {
+func (r *PostRepository) Find(post models.Post, page common.Pagination) (common.PaginationResult, error) {
 
 	var total int64
 
@@ -38,12 +39,12 @@ func (r *PostRepository) Find(post models.Post, page models.Pagination) (models.
 
 	// 获取总数
 	if err := query.Count(&total).Error; err != nil {
-		return models.PaginationResult{}, nil
+		return common.PaginationResult{}, nil
 	}
 
 	// 分页查询
 	if err := query.Scopes(page.Paginate()).Find(&posts).Error; err != nil {
-		return models.PaginationResult{}, nil
+		return common.PaginationResult{}, nil
 	}
 
 	// 计算总页数
@@ -52,7 +53,7 @@ func (r *PostRepository) Find(post models.Post, page models.Pagination) (models.
 		totalpage++
 	}
 
-	return models.PaginationResult{
+	return common.PaginationResult{
 		List:      posts,
 		Total:     total,
 		Page:      page.Page,

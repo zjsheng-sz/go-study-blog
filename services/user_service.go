@@ -20,7 +20,7 @@ func (s *UserService) GetUserByID(id uint) (models.User, error) {
 }
 
 func (s *UserService) GetUserByName(username string) (models.User, error) {
-	return  s.repo.FindByName(username)
+	return s.repo.FindByName(username)
 }
 
 func (s *UserService) GetAllUsers() ([]models.User, error) {

@@ -116,21 +116,3 @@ func (ctrl *UserController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 
 }
-
-func (ctrl *UserController) IdentiferAuth(ctx *gin.Context) {
-
-	user := models.User{}
-	userId, _ := ctx.Get("user_id")
-	user.ID = userId.(uint)
-	user.IsAuthen = true
-
-	err := ctrl.userservice.UpdateUser(user)
-
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, "success")
-
-}

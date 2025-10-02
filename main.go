@@ -34,10 +34,13 @@ func main() {
 	userService := services.NewUserCtrl(userRepo)
 	userController := api.NewUserCtrl(userService)
 
-	// 初始化各层
 	postRepo := repositories.NewPostRepo(db)
 	postService := services.NewPostService(postRepo, userRepo)
 	postController := api.NewPostCtrl(postService)
+
+	commentRepo := repositories.NewCommentRepo(db)
+	commentService := services.NewCommentService(commentRepo, userRepo, postRepo)
+	commentController := api.NewCommentCtrl(commentService)
 
 	// 设置路由
 	r := gin.Default()
@@ -56,7 +59,6 @@ func main() {
 			auth.GET("/users", userController.GetAllUsers)
 			auth.PUT("/users", userController.UpdateUser)
 			auth.DELETE("/users/:id", userController.DeleteUser)
-			auth.POST("/users/identiferAuch", userController.IdentiferAuth)
 
 			auth.GET("/posts/:id", postController.FindByID)
 			auth.GET("/posts", postController.FindList)
@@ -64,6 +66,11 @@ func main() {
 			auth.DELETE("/posts/:id", postController.DeletByID)
 			auth.POST("/posts", postController.CreatePost)
 
+			auth.GET("/comments/:id", commentController.FindByID)
+			auth.GET("/comments", commentController.FindList)
+			auth.PUT("/comments", commentController.UpdateComment)
+			auth.DELETE("/comments/:id", commentController.DeletByID)
+			auth.POST("/comments", commentController.CreateComment)
 		}
 	}
 

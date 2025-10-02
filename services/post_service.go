@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"go-study-blog/common"
 	"go-study-blog/models"
 	"go-study-blog/repositories"
 )
@@ -20,7 +21,7 @@ func (s *PostService) GetPostByID(id uint) (models.Post, error) {
 	return s.postRepo.FindByID(id)
 }
 
-func (s *PostService) GetPost(post models.Post, page models.Pagination) (models.PaginationResult, error) {
+func (s *PostService) GetPost(post models.Post, page common.Pagination) (common.PaginationResult, error) {
 
 	return s.postRepo.Find(post, page)
 
@@ -54,13 +55,9 @@ func (s *PostService) DeletePost(id int, userid uint) error {
 
 func (s *PostService) CreatePost(post models.Post, userid uint) error {
 
-	user, err := s.userRepo.FindByID(userid)
+	_, err := s.userRepo.FindByID(userid)
 	if err != nil {
-		return err
-	}
-
-	if !user.IsAuthen {
-		return errors.New("user has not auchenticate")
+		return errors.New("user not exist")
 	}
 
 	return s.postRepo.Create(post)

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"go-study-blog/common"
 	"go-study-blog/models"
 	"go-study-blog/services"
 	"net/http"
@@ -45,7 +46,7 @@ func (ctrl *PostController) CreatePost(ctx *gin.Context) {
 
 func (ctrl *PostController) FindList(ctx *gin.Context) {
 
-	page := models.Pagination{}
+	page := common.Pagination{}
 	err := ctx.ShouldBindQuery(&page)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request page"})
@@ -106,7 +107,7 @@ func (ctrl *PostController) UpdatePost(ctx *gin.Context) {
 
 func (ctrl *PostController) DeletByID(ctx *gin.Context) {
 
-	id, err:= strconv.Atoi(ctx.Param("id"))
+	id, err := strconv.Atoi(ctx.Param("id"))
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
