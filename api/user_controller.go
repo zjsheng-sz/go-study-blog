@@ -1,6 +1,7 @@
 package api
 
 import (
+	"go-study-blog/common"
 	"go-study-blog/config"
 	"go-study-blog/models"
 	"go-study-blog/services"
@@ -22,80 +23,101 @@ func NewUserCtrl(userService *services.UserService) *UserController {
 
 // Implement HTTP handler methods for user operations (e.g., GetUser, CreateUser, etc.)
 func (ctrl *UserController) GetUser(c *gin.Context) {
-
-	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := ctrl.userservice.GetUserByID(uint(id))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(404, gin.H{"error": "User not found"})
+		c.Error(common.ErrInvalidInput)
 		return
 	}
-	c.JSON(200, user)
 
+	user, err := ctrl.userservice.GetUserByID(uint(id))
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    user,
+	})
 }
 
 func (ctrl *UserController) GetAllUsers(c *gin.Context) {
 	users, err := ctrl.userservice.GetAllUsers()
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to retrieve users"})
+		c.Error(err)
 		return
 	}
-	c.JSON(200, users)
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    users,
+	})
 }
 
 func (ctrl *UserController) UpdateUser(c *gin.Context) {
-
 	user := models.User{}
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request payload"})
+		c.Error(common.ErrInvalidInput)
 		return
 	}
 
 	if err := ctrl.userservice.UpdateUser(user); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to update user"})
+		c.Error(err)
 		return
 	}
-	c.JSON(200, user)
 
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    user,
+	})
 }
 
 func (ctrl *UserController) DeleteUser(c *gin.Context) {
-
-	id, _ := strconv.Atoi(c.Param("id"))
-	if err := ctrl.userservice.DeleteUser(uint(id)); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to delete user"})
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.Error(common.ErrInvalidInput)
 		return
 	}
-	c.JSON(200, gin.H{"message": "User deleted successfully"})
 
+	if err := ctrl.userservice.DeleteUser(uint(id)); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "User deleted successfully",
+	})
 }
 
 func (ctrl *UserController) Register(c *gin.Context) {
-
 	user := models.User{}
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request payload"})
+		c.Error(common.ErrInvalidInput)
 		return
 	}
 
 	if err := ctrl.userservice.Register(user); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create user"})
+		c.Error(err)
 		return
 	}
-	c.JSON(200, user)
 
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    user,
+	})
 }
 
 func (ctrl *UserController) Login(c *gin.Context) {
-
 	user := models.User{}
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request payload"})
+		c.Error(common.ErrInvalidInput)
 		return
 	}
 
 	existingUser, err := ctrl.userservice.GetUserByName(user.Username)
 	if err != nil {
-		c.JSON(401, gin.H{"error": "Invalid username or password"})
+		c.Error(common.ErrInvalidPassword)
 		return
 	}
 

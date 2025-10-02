@@ -30,5 +30,5 @@ Authorization: Bearer {{token}}
 
 {
     "id" : 1,
-    "title" : "title1x"
+    "title" : "title1y"
 }

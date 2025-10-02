@@ -1,9 +1,11 @@
 package services
 
 import (
-	"errors"
+	"go-study-blog/common"
 	"go-study-blog/models"
 	"go-study-blog/repositories"
+
+	"gorm.io/gorm"
 )
 
 type UserService struct {
@@ -16,11 +18,19 @@ func NewUserCtrl(userRepository *repositories.UserRepository) *UserService {
 }
 
 func (s *UserService) GetUserByID(id uint) (models.User, error) {
-	return s.repo.FindByID(id)
+	user, err := s.repo.FindByID(id)
+	if err == gorm.ErrRecordNotFound {
+		return user, common.ErrUserNotFound
+	}
+	return user, err
 }
 
 func (s *UserService) GetUserByName(username string) (models.User, error) {
-	return s.repo.FindByName(username)
+	user, err := s.repo.FindByName(username)
+	if err == gorm.ErrRecordNotFound {
+		return user, common.ErrUserNotFound
+	}
+	return user, err
 }
 
 func (s *UserService) GetAllUsers() ([]models.User, error) {
@@ -28,22 +38,57 @@ func (s *UserService) GetAllUsers() ([]models.User, error) {
 }
 
 func (s *UserService) UpdateUser(user models.User) error {
+	// 检查用户是否存在
+	_, err := s.GetUserByID(user.ID)
+	if err != nil {
+		return err
+	}
 
-	return s.repo.Update(user)
+	// 更新用户信息
+	if err := s.repo.Update(user); err != nil {
+		return common.ErrDBOperation
+	}
+
+	return nil
 }
 
 func (s *UserService) DeleteUser(id uint) error {
+	// 检查用户是否存在
+	_, err := s.GetUserByID(id)
+	if err != nil {
+		return err
+	}
 
-	return s.repo.Delete(id)
+	// 删除用户
+	if err := s.repo.Delete(id); err != nil {
+		return common.ErrDBOperation
+	}
+
+	return nil
 }
 
 func (s *UserService) Register(user models.User) error {
-
 	if user.Username == "" || user.Email == "" || user.Password == "" {
-		return errors.New("username, email, and password cannot be empty")
+		return common.ErrInvalidInput
 	}
 
-	user.HashPassword(user.Password)
+	// 检查用户名是否已存在
+	_, err := s.GetUserByName(user.Username)
+	if err == nil {
+		return common.ErrUserExists
+	} else if err != common.ErrUserNotFound {
+		return err
+	}
 
-	return s.repo.Create(user)
+	// 加密密码
+	if err := user.HashPassword(user.Password); err != nil {
+		return common.ErrInternal
+	}
+
+	// 创建用户
+	if err := s.repo.Create(user); err != nil {
+		return common.ErrDBOperation
+	}
+
+	return nil
 }

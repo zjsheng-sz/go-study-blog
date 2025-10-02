@@ -1,11 +1,11 @@
 package services
 
 import (
-	"errors"
 	"go-study-blog/common"
 	"go-study-blog/models"
 	"go-study-blog/repositories"
-	"log"
+
+	"gorm.io/gorm"
 )
 
 type CommentService struct {
@@ -20,7 +20,11 @@ func NewCommentService(commentRepository *repositories.CommentRepository, userRe
 }
 
 func (s *CommentService) GetCommentByID(id uint) (models.Comment, error) {
-	return s.commentRepo.FindByID(id)
+	comment, err := s.commentRepo.FindByID(id)
+	if err == gorm.ErrRecordNotFound {
+		return comment, common.ErrCommentNotFound
+	}
+	return comment, err
 }
 
 func (s *CommentService) GetComment(comment models.Comment, page common.Pagination) (common.PaginationResult, error) {
@@ -30,46 +34,61 @@ func (s *CommentService) GetComment(comment models.Comment, page common.Paginati
 }
 
 func (s *CommentService) UpdateComment(paramComment models.Comment, userid uint) error {
-
-	comment1, _ := s.commentRepo.FindByID(paramComment.ID)
-
-	if comment1.UserID != userid {
-		return errors.New("auth error")
-	}
-
-	return s.commentRepo.Update(paramComment)
-}
-
-func (s *CommentService) DeleteComment(id int, userid uint) error {
-
-	comment, err := s.commentRepo.FindByID(uint(id))
-
-	if err != nil {
-		return err
+	comment, err := s.commentRepo.FindByID(paramComment.ID)
+	if err == gorm.ErrRecordNotFound {
+		return common.ErrCommentNotFound
+	} else if err != nil {
+		return common.ErrDBOperation
 	}
 
 	if comment.UserID != userid {
-		return errors.New("auth error")
+		return common.ErrForbidden
 	}
 
-	return s.commentRepo.Delete(comment.ID)
+	if err := s.commentRepo.Update(paramComment); err != nil {
+		return common.ErrDBOperation
+	}
+
+	return nil
+}
+
+func (s *CommentService) DeleteComment(id int, userid uint) error {
+	comment, err := s.commentRepo.FindByID(uint(id))
+	if err == gorm.ErrRecordNotFound {
+		return common.ErrCommentNotFound
+	} else if err != nil {
+		return common.ErrDBOperation
+	}
+
+	if comment.UserID != userid {
+		return common.ErrForbidden
+	}
+
+	if err := s.commentRepo.Delete(comment.ID); err != nil {
+		return common.ErrDBOperation
+	}
+
+	return nil
 }
 
 func (s *CommentService) CreateComment(comment models.Comment) error {
-
 	_, err := s.userRepo.FindByID(comment.UserID)
-
-	if err != nil {
-		log.Println("user not exist")
-		return err
+	if err == gorm.ErrRecordNotFound {
+		return common.ErrUserNotFound
+	} else if err != nil {
+		return common.ErrDBOperation
 	}
 
 	_, err = s.postRepo.FindByID(comment.PostID)
-
-	if err != nil {
-		log.Println("post not exist")
-		return err
+	if err == gorm.ErrRecordNotFound {
+		return common.ErrPostNotFound
+	} else if err != nil {
+		return common.ErrDBOperation
 	}
 
-	return s.commentRepo.Create(comment)
+	if err := s.commentRepo.Create(comment); err != nil {
+		return common.ErrCommentCreateFailed
+	}
+
+	return nil
 }

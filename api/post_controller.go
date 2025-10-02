@@ -21,88 +21,87 @@ func NewPostCtrl(services *services.PostService) *PostController {
 }
 
 func (ctrl *PostController) CreatePost(ctx *gin.Context) {
-
 	post := models.Post{}
-
-	err := ctx.ShouldBindJSON(&post)
-
-	if err != nil {
-
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+	if err := ctx.ShouldBindJSON(&post); err != nil {
+		ctx.Error(common.ErrInvalidInput)
 		return
 	}
 
 	userId, _ := ctx.Get("user_id")
 	post.UserID = userId.(uint)
 
-	err = ctrl.services.CreatePost(post, post.UserID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
+	if err := ctrl.services.CreatePost(post, post.UserID); err != nil {
+		ctx.Error(err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, post)
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    post,
+	})
 }
 
 func (ctrl *PostController) FindList(ctx *gin.Context) {
-
 	page := common.Pagination{}
-	err := ctx.ShouldBindQuery(&page)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request page"})
+	if err := ctx.ShouldBindQuery(&page); err != nil {
+		ctx.Error(common.ErrInvalidInput)
 		return
 	}
 
 	post := models.Post{}
-	err = ctx.ShouldBindQuery(&post)
-
-	if err != nil {
-
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+	if err := ctx.ShouldBindQuery(&post); err != nil {
+		ctx.Error(common.ErrInvalidInput)
 		return
 	}
 
-	result, _ := ctrl.services.GetPost(post, page)
+	result, err := ctrl.services.GetPost(post, page)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
 
-	ctx.JSON(http.StatusOK, result)
-
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    result,
+	})
 }
 
 func (ctrl *PostController) FindByID(ctx *gin.Context) {
-
-	id, _ := strconv.Atoi(ctx.Param("id"))
-
-	post, err := ctrl.services.GetPostByID(uint(id))
-
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, "eror")
+		ctx.Error(common.ErrInvalidInput)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, post)
+	post, err := ctrl.services.GetPostByID(uint(id))
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    post,
+	})
 }
 
 func (ctrl *PostController) UpdatePost(ctx *gin.Context) {
-
 	paramPost := models.Post{}
-
-	inputErr := ctx.ShouldBindJSON(&paramPost)
-
-	if inputErr != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+	if err := ctx.ShouldBindJSON(&paramPost); err != nil {
+		ctx.Error(common.ErrInvalidInput)
 		return
 	}
 
 	userId, _ := ctx.Get("user_id")
-
-	serviceErr := ctrl.services.UpdatePost(paramPost, userId.(uint))
-
-	if serviceErr != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
+	if err := ctrl.services.UpdatePost(paramPost, userId.(uint)); err != nil {
+		ctx.Error(err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, paramPost)
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    paramPost,
+	})
 }
 
 func (ctrl *PostController) DeletByID(ctx *gin.Context) {
