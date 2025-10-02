@@ -44,6 +44,7 @@ func main() {
 
 	// 设置路由
 	r := gin.Default()
+	r.Use(middleware.ErroHandler())
 
 	// 路由
 	api := r.Group("/api")
