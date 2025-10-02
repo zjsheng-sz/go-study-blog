@@ -2,6 +2,7 @@ package services
 
 import (
 	"go-study-blog/common"
+	"go-study-blog/logger"
 	"go-study-blog/models"
 	"go-study-blog/repositories"
 
@@ -75,6 +76,7 @@ func (s *UserService) Register(user models.User) error {
 	// 检查用户名是否已存在
 	_, err := s.GetUserByName(user.Username)
 	if err == nil {
+		logger.Println("用户已存在")
 		return common.ErrUserExists
 	} else if err != common.ErrUserNotFound {
 		return err
@@ -82,6 +84,7 @@ func (s *UserService) Register(user models.User) error {
 
 	// 加密密码
 	if err := user.HashPassword(user.Password); err != nil {
+		logger.Println("加密错误")
 		return common.ErrInternal
 	}
 

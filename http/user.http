@@ -1,6 +1,5 @@
 @baseUrl = http://localhost
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpc3MiOiJnby1zdHVkeS1ibG9nIiwiZXhwIjoxNzU5Mzg5MzY2LCJuYmYiOjE3NTkzMDI5NjYsImlhdCI6MTc1OTMwMjk2NiwianRpIjoiNTc5OGM5MTAtMGU1MC00OGVjLWExZmMtZTdkZGM2ZjcwMzY1In0.sggxF3FED6dxcp1lc0y6rG9XH2eQstwovVvmiFefuF8
-
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpc3MiOiJnby1zdHVkeS1ibG9nIiwiZXhwIjoxNzU5NDgzMzY0LCJuYmYiOjE3NTkzOTY5NjQsImlhdCI6MTc1OTM5Njk2NCwianRpIjoiZmM0NWJlZTgtOGJhNy00Njg5LThjMTQtMzI1NGUxMjFhNDdjIn0.jvsK5DE74gXodLVTXTof-AcPGWW4Oy-Ha3EUl6x1XfA
 @port = 8080
 
 ### register
@@ -9,8 +8,8 @@ Content-Type: application/json
 User-Agent: restclient
 
 {
-    "username" : "wj",
-    "email" : "2@qq.com",
+    "username" : "ycm",
+    "email" : "3@qq.com",
     "password" : "123456"
 }
 
@@ -38,18 +37,6 @@ Authorization: Bearer {{token}}
 ### login
 POST {{baseUrl}}:{{port}}/api/login HTTP/1.1
 Content-Type: : application/json
-
-{
-    "username" : "zjs", 
-    "password" : "123456"
-}
-
-
-### idenetiferAuth
-POST {{baseUrl}}:{{port}}/api/auth/users/identiferAuch HTTP/1.1
-Content-Type: : application/json
-Authorization: Bearer {{token}}
-
 
 {
     "username" : "zjs", 

@@ -3,24 +3,36 @@ package main
 import (
 	"go-study-blog/api"
 	"go-study-blog/config"
+	"go-study-blog/logger"
 	"go-study-blog/middleware"
 	"go-study-blog/models"
 	"go-study-blog/repositories"
 	"go-study-blog/services"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 func main() {
 
 	cfg := config.Load()
 
+	gormLogger := gormlogger.New(
+		logger.GetLogger(),
+		gormlogger.Config{
+			SlowThreshold:             time.Second,
+			LogLevel:                  gormlogger.Info,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  false,
+		},
+	)
+
 	//初始化数据库
 	db, err := gorm.Open(mysql.Open(cfg.DB.DSN), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), // 打印所有 SQL
+		Logger: gormLogger,
 	})
 
 	if err != nil {
@@ -43,7 +55,11 @@ func main() {
 	commentController := api.NewCommentCtrl(commentService)
 
 	// 设置路由
-	r := gin.Default()
+	r := gin.New()
+	// 使用自定义详细日志中间件
+	r.Use(middleware.DetailedLogger())
+	r.Use(gin.RecoveryWithWriter(logger.GetLogger().Writer()))
+
 	r.Use(middleware.ErroHandler())
 
 	// 路由
